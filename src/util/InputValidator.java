@@ -9,14 +9,12 @@ public class InputValidator {
 
     /**
      * Lee y valida una fecha con el formato YYYY-MM-DD.
-     * Continúa solicitando el dato hasta que se ingrese un valor correcto.
      */
     public static String readValidatedDate(Scanner sc, String prompt) {
         while (true) {
             System.out.print(prompt);
             String input = sc.nextLine();
             try {
-                // Intenta parsear la fecha utilizando el formato ISO_LOCAL_DATE
                 LocalDate.parse(input, DateTimeFormatter.ISO_LOCAL_DATE);
                 return input;
             } catch (DateTimeParseException e) {
@@ -24,10 +22,39 @@ public class InputValidator {
             }
         }
     }
-    
+
+    /**
+     * Lee y valida un correo electrónico.
+     */
+    public static String readValidatedEmail(Scanner sc, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = sc.nextLine().trim();
+            if (input.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+                return input;
+            } else {
+                System.out.println("Formato de correo inválido. Por favor ingresa un correo válido.");
+            }
+        }
+    }
+
+    /**
+     * Lee y valida un número de teléfono de exactamente 8 dígitos.
+     */
+    public static String readValidatedPhone(Scanner sc, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = sc.nextLine().trim();
+            if (input.matches("\\d{8}")) {
+                return input;
+            } else {
+                System.out.println("Número de teléfono inválido. Debe contener exactamente 8 dígitos.");
+            }
+        }
+    }
+
     /**
      * Lee y valida un dato alfanumérico (sin espacios ni caracteres especiales).
-     * Puedes ajustar la expresión regular según tus necesidades.
      */
     public static String readValidatedAlphanumeric(Scanner sc, String prompt) {
         while (true) {
@@ -40,7 +67,7 @@ public class InputValidator {
             }
         }
     }
-    
+
     /**
      * Lee un número entero, verificándolo.
      */
@@ -54,7 +81,7 @@ public class InputValidator {
             }
         }
     }
-    
+
     /**
      * Lee una entrada de texto (puede incluir espacios) y verifica que no esté vacía.
      */

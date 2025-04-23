@@ -33,6 +33,7 @@ public class App {
             System.out.println("4. Gestión de Fases");
             System.out.println("5. Ver Historial de Garantías");
             System.out.println("6. Mover Computadora de Fase");
+            System.out.println("7. Procesar siguiente en cola de fase");
             System.out.println("0. Salir");
             option = InputValidator.readValidatedInteger(sc, "Opción: ");
 
@@ -61,6 +62,14 @@ public class App {
                     Utils.clearConsole();
                     moveComputerMenu(sc, warrantyMgr);
                 }
+                case 7 -> {
+                    Utils.clearConsole();
+                    int fase = InputValidator.readValidatedInteger(sc,
+                            "¿De qué fase quieres procesar la cola? (1-Recep,2-Ins,3-Rep,4-C.C,5-Ent): ");
+                    warrantyMgr.processNextInPhase(fase, sc);
+                    System.out.println("\nPresiona Enter para continuar...");
+                    sc.nextLine();
+                }
                 case 0 -> System.out.println("¡Hasta luego!");
                 default -> {
                     System.out.println("Opción inválida. Presione Enter para continuar...");
@@ -71,6 +80,7 @@ public class App {
 
         sc.close();
     }
+
     /** Menú para mover computadoras de fase */
     private static void moveComputerMenu(Scanner sc, WarrantyManager mgr) {
         try {

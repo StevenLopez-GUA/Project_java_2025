@@ -1,5 +1,6 @@
 import controllers.ClientController;
 import controllers.ComputerController;
+import controllers.PhaseController;
 import controllers.TechnicalController;
 import logic.WarrantyManager;
 import util.Utils;
@@ -14,6 +15,7 @@ public class App {
         ComputerController compCtrl = new ComputerController();
         TechnicalController techCtrl = new TechnicalController();
         WarrantyManager warrantyMgr = new WarrantyManager();
+        PhaseController phaseCtrl = new PhaseController();
 
         int option;
         do {
@@ -22,7 +24,8 @@ public class App {
             System.out.println("1. Gestión de Computadoras");
             System.out.println("2. Gestión de Clientes");
             System.out.println("3. Gestión de Técnicos");
-            System.out.println("4. Mover Computadora de Fase");
+            System.out.println("4. Gestión de Fases");
+            System.out.println("5. Mover Computadora de Fase");
             System.out.println("0. Salir");
             option = InputValidator.readValidatedInteger(sc, "Opción: ");
 
@@ -40,6 +43,10 @@ public class App {
                     techCtrl.menu(sc);
                 }
                 case 4 -> {
+                    Utils.clearConsole();
+                    phaseCtrl.menu(sc);
+                }
+                case 5 -> {
                     Utils.clearConsole();
                     moveComputerMenu(sc, warrantyMgr);
                 }

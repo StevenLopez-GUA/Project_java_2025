@@ -1,21 +1,27 @@
 import controllers.ClientController;
 import controllers.ComputerController;
 import controllers.PhaseController;
+import controllers.RecordController;
 import controllers.TechnicalController;
 import logic.WarrantyManager;
 import util.Utils;
+import util.DataInitializer;
 import util.InputValidator;
 import java.util.Scanner;
 
 public class App {
 
     public static void main(String[] args) {
+
+        DataInitializer.init();
+
         Scanner sc = new Scanner(System.in);
         ClientController clientCtrl = new ClientController();
         ComputerController compCtrl = new ComputerController();
         TechnicalController techCtrl = new TechnicalController();
         WarrantyManager warrantyMgr = new WarrantyManager();
         PhaseController phaseCtrl = new PhaseController();
+        RecordController recordCtrl = new RecordController();
 
         int option;
         do {
@@ -25,7 +31,8 @@ public class App {
             System.out.println("2. Gestión de Clientes");
             System.out.println("3. Gestión de Técnicos");
             System.out.println("4. Gestión de Fases");
-            System.out.println("5. Mover Computadora de Fase");
+            System.out.println("5. Ver Historial de Garantías");
+            System.out.println("6. Mover Computadora de Fase");
             System.out.println("0. Salir");
             option = InputValidator.readValidatedInteger(sc, "Opción: ");
 
@@ -47,6 +54,10 @@ public class App {
                     phaseCtrl.menu(sc);
                 }
                 case 5 -> {
+                    Utils.clearConsole();
+                    recordCtrl.menu(sc);
+                }
+                case 6 -> {
                     Utils.clearConsole();
                     moveComputerMenu(sc, warrantyMgr);
                 }

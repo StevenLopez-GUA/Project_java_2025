@@ -16,20 +16,58 @@ public class WarrantyManager {
      * Mueve una computadora a una nueva fase.
      *
      * @param serviceTag  El identificador de la computadora.
-     * @param nuevaPhase  El identificador de la nueva fase (por ejemplo, 1=Recepción, etc.).
+     * @param nuevaPhase  El identificador de la nueva fase (por ejemplo,
+     *                    1=Recepción, etc.).
      * @param technicalId El ID del técnico (puede ser null si no aplica).
      * @param details     Información adicional sobre el movimiento.
      */
+
+    /**
+     * Encola el registro inicial (fase Recepción) de una computadora recién
+     * registrada.
+     * 
+     * @param serviceTag Identificador de la computadora.
+     * @param ignored    Segundo parámetro (puedes pasarlo pero no se usa para la
+     *                   fase inicial).
+     */
+    public void enqueueInitialPhase(String serviceTag, Integer ignored) {
+        // 1) Fecha/hora actual en ISO-8601
+        String now = LocalDateTime.now()
+                .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+        // 2) Leer el historial completo
+        Type listType = new TypeToken<List<Record>>() {
+        }.getType();
+        List<Record> historial = JSONManager.readList(HISTORIAL_FILE, listType);
+
+        // 3) Crear nuevo Record para fase 1 (Recepción)
+        int newId = historial.size() + 1;
+        Record rec = new Record(
+                newId,
+                serviceTag,
+                1, // faseId = 1 => Recepción
+                null, // technicalId = null
+                now, // fecha de entrada
+                null, // fecha de salida pendiente
+                "Ingreso en Recepción");
+
+        // 4) Añadir y guardar
+        historial.add(rec);
+        JSONManager.writeList(HISTORIAL_FILE, historial);
+    }
+
     public void moverComputadora(String serviceTag, int nuevaPhase, Integer technicalId, String details) {
         // Formateador de fecha ISO-8601
         DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
         String currentDateTime = LocalDateTime.now().format(formatter);
 
         // Leer la lista actual de registros de historial
-        Type listType = new TypeToken<List<Record>>(){}.getType();
+        Type listType = new TypeToken<List<Record>>() {
+        }.getType();
         List<Record> historial = JSONManager.readList(HISTORIAL_FILE, listType);
 
-        // Buscar el último registro de esta computadora que aún no tenga fecha de salida (endDateTime)
+        // Buscar el último registro de esta computadora que aún no tenga fecha de
+        // salida (endDateTime)
         for (Record r : historial) {
             if (r.getServiceTag().equals(serviceTag) && r.getDepartureDate() == null) {
                 // Cerrar el registro actual asignando la fecha de salida
@@ -39,16 +77,15 @@ public class WarrantyManager {
         }
 
         // Crear un nuevo registro para la nueva fase
-        int newRecordId = historial.size() + 1;  // Simple contador
+        int newRecordId = historial.size() + 1; // Simple contador
         Record nuevoRegistro = new Record(
-            newRecordId,
-            serviceTag,
-            nuevaPhase,
-            technicalId,
-            currentDateTime,
-            null,
-            details
-        );
+                newRecordId,
+                serviceTag,
+                nuevaPhase,
+                technicalId,
+                currentDateTime,
+                null,
+                details);
         historial.add(nuevoRegistro);
 
         // Guardar cambios en el archivo JSON

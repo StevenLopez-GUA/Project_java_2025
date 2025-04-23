@@ -1,1 +1,22 @@
-[{"phaseID":1,"namePhase":"Compra"},{"phaseID":2,"namePhase":"Vendido"}]
+[
+    {
+        "phaseID": 1,
+        "namePhase": "Recepción"
+    },
+    {
+        "phaseID": 2,
+        "namePhase": "Inspección"
+    },
+    {
+        "phaseID": 3,
+        "namePhase": "Reparación"
+    },
+    {
+        "phaseID": 4,
+        "namePhase": "Control de Calidad"
+    },
+    {
+        "phaseID": 5,
+        "namePhase": "Entrega"
+    }
+]

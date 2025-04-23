@@ -1,4 +1,5 @@
 import controllers.ClientController;
+import controllers.ComputerController;
 import logic.WarrantyManager;
 import model.Computer;
 import persistence.JSONManager;
@@ -12,11 +13,10 @@ import java.util.Scanner;
 
 public class App {
 
-    private static final String COMPUTER_FILE = "computers.json";
-
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         ClientController clientCtrl = new ClientController();
+        ComputerController compCtrl = new ComputerController();
         WarrantyManager warrantyMgr = new WarrantyManager();
 
         int option;
@@ -30,7 +30,10 @@ public class App {
             option = InputValidator.readValidatedInteger(sc, "Opción: ");
 
             switch (option) {
-                case 1 -> computerMenu(sc);
+                case 1 -> {
+                    Utils.clearConsole();
+                    compCtrl.menu(sc);
+                }
                 case 2 -> {
                     Utils.clearConsole();
                     clientCtrl.menu(sc);
@@ -49,45 +52,6 @@ public class App {
 
         sc.close();
     }
-
-    /** Sub-menú para registrar y mostrar computadoras */
-    private static void computerMenu(Scanner sc) {
-        int opt;
-        do {
-            Utils.clearConsole();
-            System.out.println("--- Computadoras ---");
-            System.out.println("1. Registrar Computadora");
-            System.out.println("2. Ver Computadoras Registradas");
-            System.out.println("3. Volver al Menú Principal");
-            opt = InputValidator.readValidatedInteger(sc, "Opción: ");
-
-            switch (opt) {
-                case 1 -> {
-                    try {
-                        System.out.println("Ingrese datos de la computadora:");
-                        String tag = InputValidator.readValidatedAlphanumeric(sc, "Service Tag: ");
-                        int clientId = InputValidator.readValidatedInteger(sc, "ID de Cliente: ");
-                        String problema = InputValidator.readValidatedText(sc, "Descripción del problema: ");
-                        String fecha = InputValidator.readValidatedDate(sc, "Fecha de recepción (YYYY-MM-DD): ");
-
-                        Computer comp = new Computer(tag, clientId, problema, fecha);
-                        registerComputer(comp);
-                    } catch (Exception e) {
-                        System.out.println("Error: " + e.getMessage());
-                    }
-                }
-                case 2 -> showComputers();
-                case 3 -> { /* vuelve */ }
-                default -> System.out.println("Opción inválida.");
-            }
-
-            if (opt != 3) {
-                System.out.println("Presione Enter para continuar...");
-                sc.nextLine();
-            }
-        } while (opt != 3);
-    }
-
     /** Menú para mover computadoras de fase */
     private static void moveComputerMenu(Scanner sc, WarrantyManager mgr) {
         try {
@@ -104,25 +68,5 @@ public class App {
         }
         System.out.println("Presione Enter para continuar...");
         sc.nextLine();
-    }
-
-    /** Registra una computadora en el JSON */
-    private static void registerComputer(Computer comp) {
-        Type type = new TypeToken<List<Computer>>() {}.getType();
-        List<Computer> list = JSONManager.readList(COMPUTER_FILE, type);
-        list.add(comp);
-        JSONManager.writeList(COMPUTER_FILE, list);
-        System.out.println("Computadora registrada: " + comp.getServiceTag());
-    }
-
-    /** Muestra todas las computadoras registradas */
-    private static void showComputers() {
-        Type type = new TypeToken<List<Computer>>() {}.getType();
-        List<Computer> list = JSONManager.readList(COMPUTER_FILE, type);
-        System.out.println("=== Lista de Computadoras ===");
-        for (Computer c : list) {
-            System.out.printf("ServiceTag: %s | ClienteID: %d | Problema: %s | Fecha: %s%n",
-                c.getServiceTag(), c.getClientId(), c.getProblemDescription(), c.getReceptionDate());
-        }
     }
 }

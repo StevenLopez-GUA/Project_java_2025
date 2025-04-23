@@ -1,3 +1,4 @@
+import logic.WarrantyManager;
 import model.Computer;
 import persistence.JSONManager;
 import util.Utils;
@@ -30,40 +31,38 @@ public class App {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+        WarrantyManager gestor = new WarrantyManager();
         int option;
         do {
-            // Limpia la consola utilizando Utils
             Utils.clearConsole();
             System.out.println("--- Menú Principal ---");
             System.out.println("1. Registrar Computadora");
             System.out.println("2. Ver Computadoras Registradas");
-            System.out.println("3. Salir");
-            // Utiliza el método para leer un entero validado
+            System.out.println("3. Mover Computadora a otra Fase");
+            System.out.println("4. Salir");
+            
             option = InputValidator.readValidatedInteger(sc, "Opción: ");
 
             switch (option) {
                 case 1:
                     try {
                         System.out.println("Ingrese datos de la computadora:");
-                        // Para el service tag, si requieres que sea alfanumérico sin espacios:
                         String serviceTag = InputValidator.readValidatedAlphanumeric(sc, "Service Tag: ");
                         int clientId = InputValidator.readValidatedInteger(sc, "ID de Cliente: ");
-                        // Lee la descripción como un texto (puede incluir espacios)
                         String problem = InputValidator.readValidatedText(sc, "Descripción del problema: ");
-                        // Lee la fecha validada
                         String receptionDate = InputValidator.readValidatedDate(sc, "Fecha de recepción (YYYY-MM-DD): ");
 
                         Computer comp = new Computer(serviceTag, clientId, problem, receptionDate);
                         registerComputer(comp);
+
                         System.out.println("Presione Enter para continuar...");
                         sc.nextLine();
                     } catch (Exception e) {
                         System.out.println("Se produjo un error: " + e.getMessage());
-                        System.out.println("Por favor, inténtalo de nuevo. Presiona Enter para continuar...");
+                        System.out.println("Inténtalo de nuevo. Presione Enter para continuar...");
                         sc.nextLine();
                     }
                     break;
-
                 case 2:
                     try {
                         showComputers();
@@ -71,21 +70,38 @@ public class App {
                         sc.nextLine();
                     } catch (Exception e) {
                         System.out.println("Se produjo un error: " + e.getMessage());
-                        System.out.println("Por favor, inténtalo de nuevo. Presione Enter para continuar...");
+                        System.out.println("Inténtalo de nuevo. Presione Enter para continuar...");
                         sc.nextLine();
                     }
                     break;
-
                 case 3:
+                    try {
+                        // Solicitar datos para mover la computadora
+                        System.out.println("Mover Computadora a otra fase:");
+                        String moveTag = InputValidator.readValidatedAlphanumeric(sc, "Service Tag de la Computadora: ");
+                        int nuevaPhase = InputValidator.readValidatedInteger(sc, "ID de la nueva fase: ");
+                        // Si es necesario solicitar el técnico, se puede usar un entero. Si no, se puede dejar null.
+                        int techOption = InputValidator.readValidatedInteger(sc, "Ingrese ID de Técnico (0 si no aplica): ");
+                        Integer technicalId = (techOption == 0) ? null : techOption;
+                        String moveDetails = InputValidator.readValidatedText(sc, "Detalles del movimiento: ");
+
+                        gestor.moverComputadora(moveTag, nuevaPhase, technicalId, moveDetails);
+                        System.out.println("Presione Enter para continuar...");
+                        sc.nextLine();
+                    } catch (Exception e) {
+                        System.out.println("Se produjo un error: " + e.getMessage());
+                        System.out.println("Inténtalo de nuevo. Presione Enter para continuar...");
+                        sc.nextLine();
+                    }
+                    break;
+                case 4:
                     System.out.println("Saliendo...");
                     break;
-
                 default:
                     System.out.println("Opción inválida. Presione Enter para continuar...");
                     sc.nextLine();
             }
-        } while (option != 3);
-
+        } while (option != 4);
         sc.close();
     }
 }

@@ -1,14 +1,9 @@
 import controllers.ClientController;
 import controllers.ComputerController;
+import controllers.TechnicalController;
 import logic.WarrantyManager;
-import model.Computer;
-import persistence.JSONManager;
 import util.Utils;
 import util.InputValidator;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.List;
 import java.util.Scanner;
 
 public class App {
@@ -17,6 +12,7 @@ public class App {
         Scanner sc = new Scanner(System.in);
         ClientController clientCtrl = new ClientController();
         ComputerController compCtrl = new ComputerController();
+        TechnicalController techCtrl = new TechnicalController();
         WarrantyManager warrantyMgr = new WarrantyManager();
 
         int option;
@@ -25,8 +21,9 @@ public class App {
             System.out.println("=== Menú Principal ===");
             System.out.println("1. Gestión de Computadoras");
             System.out.println("2. Gestión de Clientes");
-            System.out.println("3. Mover Computadora de Fase");
-            System.out.println("4. Salir");
+            System.out.println("3. Gestión de Técnicos");
+            System.out.println("4. Mover Computadora de Fase");
+            System.out.println("0. Salir");
             option = InputValidator.readValidatedInteger(sc, "Opción: ");
 
             switch (option) {
@@ -40,15 +37,19 @@ public class App {
                 }
                 case 3 -> {
                     Utils.clearConsole();
+                    techCtrl.menu(sc);
+                }
+                case 4 -> {
+                    Utils.clearConsole();
                     moveComputerMenu(sc, warrantyMgr);
                 }
-                case 4 -> System.out.println("¡Hasta luego!");
+                case 0 -> System.out.println("¡Hasta luego!");
                 default -> {
                     System.out.println("Opción inválida. Presione Enter para continuar...");
                     sc.nextLine();
                 }
             }
-        } while (option != 4);
+        } while (option != 0);
 
         sc.close();
     }

@@ -2,6 +2,7 @@ package controllers;
 
 import com.google.gson.reflect.TypeToken;
 import model.Technical;
+import model.Record;
 import persistence.JSONManager;
 import util.InputValidator;
 import util.Utils;
@@ -95,20 +96,36 @@ public class TechnicalController {
         }
     }
 
-    /** Elimina un técnico */
-    public void delete(Scanner sc) {
-        int id = InputValidator.readValidatedInteger(sc, "ID de técnico a eliminar: ");
-        List<Technical> list = getAll();
-        for (Technical t : new ArrayList<>(list)) {
-            if (t.getTechnicalId() == id) {
-                list.remove(t);
-                saveAll(list);
-                System.out.println("Técnico eliminado: " + t.getNameTechnical());
-                return;
-            }
+    
+/**
+ * Elimina un técnico solo si no está referenciado en el historial.
+ */
+public void delete(Scanner sc) {
+    int id = InputValidator.readValidatedInteger(sc, "ID de técnico a eliminar: ");
+
+    // Verificar referencias en historial.json
+    Type recordListType = new TypeToken<List<Record>>() {}.getType();
+    List<Record> historial = JSONManager.readList("historial.json", recordListType);
+    for (Record r : historial) {
+        if (r.getTechnicalId() != null && r.getTechnicalId() == id) {
+            System.out.println("No se puede eliminar: técnico está usado en historial (Record ID: " 
+                + r.getRecordId() + ").");
+            return;
         }
-        System.out.println("No se encontró técnico con ID " + id);
     }
+
+    // Si no hay referencias, proceder a eliminar
+    List<Technical> list = getAll();
+    for (Technical t : new ArrayList<>(list)) {
+        if (t.getTechnicalId() == id) {
+            list.remove(t);
+            saveAll(list);
+            System.out.println("Técnico eliminado: " + t.getNameTechnical());
+            return;
+        }
+    }
+    System.out.println("No se encontró técnico con ID " + id);
+}
 
     /** Menú interactivo de CRUD de técnicos */
     public void menu(Scanner sc) {

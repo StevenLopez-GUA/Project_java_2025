@@ -2,6 +2,7 @@ package controllers;
 
 import com.google.gson.reflect.TypeToken;
 import model.Phase;
+import model.Record;
 import persistence.JSONManager;
 import util.InputValidator;
 import util.Utils;
@@ -95,20 +96,35 @@ public class PhaseController {
         }
     }
 
-    /** Elimina una fase */
-    public void delete(Scanner sc) {
-        int id = InputValidator.readValidatedInteger(sc, "ID de fase a eliminar: ");
-        List<Phase> list = getAll();
-        for (Phase f : new ArrayList<>(list)) {
-            if (f.getPhaseId() == id) {
-                list.remove(f);
-                saveAll(list);
-                System.out.println("Phase eliminada: " + f.getNamePhase());
-                return;
-            }
+    /**
+ * Elimina una fase solo si no está referenciada en el historial.
+ */
+public void delete(Scanner sc) {
+    int id = InputValidator.readValidatedInteger(sc, "ID de fase a eliminar: ");
+
+    // Verificar referencias en historial.json
+    Type recordListType = new TypeToken<List<Record>>() {}.getType();
+    List<Record> historial = JSONManager.readList("historial.json", recordListType);
+    for (Record r : historial) {
+        if (r.getPhaseId() == id) {
+            System.out.println("No se puede eliminar: fase está usada en historial (Record ID: " 
+                + r.getRecordId() + ").");
+            return;
         }
-        System.out.println("No se encontró fase con ID " + id);
     }
+
+    // Si no hay referencias, proceder a eliminar
+    List<Phase> list = getAll();
+    for (Phase f : new ArrayList<>(list)) {
+        if (f.getPhaseId() == id) {
+            list.remove(f);
+            saveAll(list);
+            System.out.println("Fase eliminada: " + f.getNamePhase());
+            return;
+        }
+    }
+    System.out.println("No se encontró fase con ID " + id);
+}
 
     /** Menú interactivo de CRUD de fases */
     public void menu(Scanner sc) {

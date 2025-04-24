@@ -1,6 +1,7 @@
 package controllers;
 
 import model.Client;
+import model.Computer;
 import persistence.JSONManager;
 import util.InputValidator;
 import util.Utils;
@@ -16,7 +17,8 @@ public class ClientController {
 
     /** Lee todos los clientes desde el JSON */
     public List<Client> getAll() {
-        Type listType = new TypeToken<List<Client>>(){}.getType();
+        Type listType = new TypeToken<List<Client>>() {
+        }.getType();
         return JSONManager.readList(CLIENTS_FILE, listType);
     }
 
@@ -48,8 +50,23 @@ public class ClientController {
         return false;
     }
 
-    /** Elimina un cliente por su ID */
+    /** Elimina un cliente por su ID, sólo si no tiene computadoras asociadas */
     public boolean delete(int clientId) {
+        // 1) Leer todas las computadoras
+        Type compListType = new TypeToken<List<Computer>>() {
+        }.getType();
+        List<Computer> comps = JSONManager.readList("computers.json", compListType);
+
+        // 2) Verificar asociación
+        for (Computer c : comps) {
+            if (c.getClientId() == clientId) {
+                System.out.println("No se puede eliminar: el cliente tiene computadoras asociadas (ServiceTag: "
+                        + c.getServiceTag() + ").");
+                return false;
+            }
+        }
+
+        // 3) Si no hay asociaciones, proceder a borrar
         List<Client> list = getAll();
         for (Client c : new ArrayList<>(list)) {
             if (c.getClientId() == clientId) {
@@ -69,7 +86,7 @@ public class ClientController {
         System.out.println("=== Lista de Clientes ===");
         for (Client c : list) {
             System.out.printf("ID:%d  Nombre:%s  Correo:%s  Tel:%s%n",
-                c.getClientId(), c.getName(), c.getEmail(), c.getPhone());
+                    c.getClientId(), c.getName(), c.getEmail(), c.getPhone());
         }
     }
 
@@ -79,7 +96,7 @@ public class ClientController {
             if (c.getClientId() == clientId) {
                 System.out.println("=== Cliente Encontrado ===");
                 System.out.printf("ID: %d%nNombre: %s%nCorreo: %s%nTeléfono: %s%n",
-                    c.getClientId(), c.getName(), c.getEmail(), c.getPhone());
+                        c.getClientId(), c.getName(), c.getEmail(), c.getPhone());
                 return;
             }
         }
@@ -147,21 +164,21 @@ public class ClientController {
                     // Mostrar info actual
                     System.out.println("=== Información Actual ===");
                     System.out.printf("1. Nombre: %s%n2. Correo: %s%n3. Teléfono: %s%n4. Todos los campos%n",
-                        existing.getName(), existing.getEmail(), existing.getPhone());
+                            existing.getName(), existing.getEmail(), existing.getPhone());
                     int fieldOpt = InputValidator.readValidatedInteger(sc, "¿Qué deseas actualizar? ");
 
-                    String updatedName   = existing.getName();
-                    String updatedEmail  = existing.getEmail();
-                    String updatedTel    = existing.getPhone();
+                    String updatedName = existing.getName();
+                    String updatedEmail = existing.getEmail();
+                    String updatedTel = existing.getPhone();
 
                     switch (fieldOpt) {
-                        case 1 -> updatedName  = InputValidator.readValidatedText(sc, "Nuevo Nombre: ");
+                        case 1 -> updatedName = InputValidator.readValidatedText(sc, "Nuevo Nombre: ");
                         case 2 -> updatedEmail = InputValidator.readValidatedEmail(sc, "Nuevo Correo: ");
-                        case 3 -> updatedTel   = InputValidator.readValidatedPhone(sc, "Nuevo Teléfono: ");
+                        case 3 -> updatedTel = InputValidator.readValidatedPhone(sc, "Nuevo Teléfono: ");
                         case 4 -> {
-                            updatedName  = InputValidator.readValidatedText(sc, "Nuevo Nombre: ");
+                            updatedName = InputValidator.readValidatedText(sc, "Nuevo Nombre: ");
                             updatedEmail = InputValidator.readValidatedEmail(sc, "Nuevo Correo: ");
-                            updatedTel   = InputValidator.readValidatedPhone(sc, "Nuevo Teléfono: ");
+                            updatedTel = InputValidator.readValidatedPhone(sc, "Nuevo Teléfono: ");
                         }
                         default -> System.out.println("Opción inválida. No se realizaron cambios.");
                     }

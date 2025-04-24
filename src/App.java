@@ -2,11 +2,14 @@ import controllers.ClientController;
 import controllers.ComputerController;
 import controllers.PhaseController;
 import controllers.RecordController;
+import controllers.StatisticsController;
 import controllers.TechnicalController;
 import logic.WarrantyManager;
 import util.Utils;
 import util.DataInitializer;
 import util.InputValidator;
+
+import java.util.List;
 import java.util.Scanner;
 
 public class App {
@@ -22,6 +25,7 @@ public class App {
         WarrantyManager warrantyMgr = new WarrantyManager();
         PhaseController phaseCtrl = new PhaseController();
         RecordController recordCtrl = new RecordController();
+        StatisticsController statsCtrl = new StatisticsController();
 
         int option;
         do {
@@ -34,6 +38,8 @@ public class App {
             System.out.println("5. Ver Historial de Garantías");
             System.out.println("6. Mover Computadora de Fase");
             System.out.println("7. Procesar siguiente en cola de fase");
+            System.out.println("8. Ver cola de espera de fase");
+            System.out.println("9. Informes Estadísticos");
             System.out.println("0. Salir");
             option = InputValidator.readValidatedInteger(sc, "Opción: ");
 
@@ -69,6 +75,26 @@ public class App {
                     warrantyMgr.processNextInPhase(fase, sc);
                     System.out.println("\nPresiona Enter para continuar...");
                     sc.nextLine();
+                }
+                case 8 -> {
+                    Utils.clearConsole();
+                    System.out.println("— Cola de espera de fase —");
+                    int phaseId = InputValidator.readValidatedInteger(sc,
+                        "¿De qué fase quieres ver la cola? (1-Recepción,2-Inspección,3-Reparación,4-Control calidad,5-Entrega): ");
+                    List<String> queue = warrantyMgr.getQueue(phaseId);
+                    if (queue.isEmpty()) {
+                        System.out.println("No hay computadoras en espera para la fase " + phaseId + ".");
+                    } else {
+                        System.out.println("Computadoras en cola para fase " + phaseId + ":");
+                        for (String qtag : queue) {
+                            System.out.println(" - " + qtag);
+                        }
+                    }
+                    System.out.println("\nPresione Enter para continuar..."); sc.nextLine();
+                }
+                case 9 -> {
+                    Utils.clearConsole();
+                    statsCtrl.menu(sc);
                 }
                 case 0 -> System.out.println("¡Hasta luego!");
                 default -> {

@@ -34,12 +34,15 @@ Este proyecto tiene como objetivo desarrollar un sistema en Java para administra
   - Mover computadoras entre las distintas fases.
   - Consultar el historial de computadoras.
   - Visualizar el estado actual de cada equipo.
+  - Informacion de los clientes.
+  - Informaciones de los tecnicos.
+  - Visualizar el estado actual de cada equipo.
   - Salir del sistema.
 
 ## Estructura de Datos (Archivos JSON)
 La información se almacena en archivos JSON. A continuación se muestra un ejemplo de la estructura de cada archivo:
 
-### clientes.json
+### clients.json
 ```json
 [
   {
@@ -51,7 +54,7 @@ La información se almacena en archivos JSON. A continuación se muestra un ejem
 ]
 ```
 
-### computadoras.json
+### computers.json
 ```json
 [
   {
@@ -63,7 +66,7 @@ La información se almacena en archivos JSON. A continuación se muestra un ejem
 ]
 ```
 
-### tecnicos.json
+### technicians.json
 ```json
 [
   {
@@ -73,7 +76,7 @@ La información se almacena en archivos JSON. A continuación se muestra un ejem
 ]
 ```
 
-### fases.json
+### phases.json
 ```json
 [
   { "fase_id": 1, "nombre_fase": "Recepción" },
@@ -108,8 +111,8 @@ La información se almacena en archivos JSON. A continuación se muestra un ejem
 
 1. **Clonar el Repositorio:**
    ```bash
-   git clone https://github.com/tu-usuario/sistema-gestion-garantias.git
-   cd sistema-gestion-garantias
+   git clone https://github.com/StevenLopez-GUA/Project_java_2025.git
+   cd StevenLopez-GUA
    ```
 
 2. **Compilar el Proyecto:**
@@ -124,15 +127,3 @@ La información se almacena en archivos JSON. A continuación se muestra un ejem
    java -cp bin Main
    ```
    El sistema presentará un menú interactivo en la terminal para gestionar las operaciones del sistema.
-
-## Contribuciones
-¡Las contribuciones son bienvenidas! Si deseas colaborar:
-- Crea una nueva rama para implementar tus cambios.
-- Realiza un pull request para revisar y fusionar tus aportes.
-
-## Licencia
-Este proyecto se distribuye bajo la Licencia MIT. Consulta el archivo LICENSE para más detalles.
-
----
-
-Este README.md provee una descripción completa del proyecto, su estructura, funcionalidades y cómo configurarlo y ejecutarlo. Puedes ajustarlo según los requerimientos específicos de tu desarrollo. ¡Éxito con tu proyecto!

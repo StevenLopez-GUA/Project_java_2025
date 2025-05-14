@@ -1,6 +1,8 @@
 package controllers;
 
 import com.google.gson.reflect.TypeToken;
+
+import auth.AuthenticationService;
 import logic.WarrantyManager;
 import model.Computer;
 import persistence.JSONManager;
@@ -16,9 +18,17 @@ public class ComputerController {
     private static final String COMPUTERS_FILE = "computers.json";
     private WarrantyManager warrantyMgr = new WarrantyManager();
 
+    // Dentro de ComputerController.java
+    private AuthenticationService auth;
+
+    public ComputerController(AuthenticationService auth) {
+        this.auth = auth;
+    }
+
     /** Lee todos los equipos del JSON */
     private List<Computer> getAll() {
-        Type listType = new TypeToken<List<Computer>>() {}.getType();
+        Type listType = new TypeToken<List<Computer>>() {
+        }.getType();
         return JSONManager.readList(COMPUTERS_FILE, listType);
     }
 
@@ -33,7 +43,7 @@ public class ComputerController {
         System.out.println("=== Lista de Computadoras ===");
         for (Computer c : list) {
             System.out.printf("ServiceTag:%s | ClienteID:%d | Problema:%s | Fecha:%s%n",
-                c.getServiceTag(), c.getClientId(), c.getProblemDescription(), c.getReceptionDate());
+                    c.getServiceTag(), c.getClientId(), c.getProblemDescription(), c.getReceptionDate());
         }
     }
 
@@ -43,7 +53,7 @@ public class ComputerController {
             if (c.getServiceTag().equals(tag)) {
                 System.out.println("=== Computadora Encontrada ===");
                 System.out.printf("ServiceTag: %s%nClienteID: %d%nProblema: %s%nFecha: %s%n",
-                    c.getServiceTag(), c.getClientId(), c.getProblemDescription(), c.getReceptionDate());
+                        c.getServiceTag(), c.getClientId(), c.getProblemDescription(), c.getReceptionDate());
                 return;
             }
         }
@@ -86,7 +96,7 @@ public class ComputerController {
         // Mostrar datos actuales
         System.out.println("=== Datos Actuales ===");
         System.out.printf("1. ClienteID: %d%n2. Problema: %s%n3. Fecha: %s%n4. Todos los campos%n",
-            existing.getClientId(), existing.getProblemDescription(), existing.getReceptionDate());
+                existing.getClientId(), existing.getProblemDescription(), existing.getReceptionDate());
         int choice = InputValidator.readValidatedInteger(sc, "¿Qué campo deseas actualizar? ");
 
         int newClientId = existing.getClientId();

@@ -1,5 +1,6 @@
 package util;
 
+import java.io.Console;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -93,6 +94,38 @@ public class InputValidator {
                 return input;
             } else {
                 System.out.println("La entrada no puede estar vacía. Inténtalo de nuevo.");
+            }
+        }
+    }
+
+
+    public static String readPassword(Scanner sc, String prompt) {
+        return readPassword(sc, prompt, false);
+    }
+
+    /**
+     * Variante que permite devolver cadena vacía cuando allowEmpty=true
+     * (útil para “Enter = mantener” al editar registros).
+     */
+    public static String readPassword(Scanner sc,
+                                      String prompt,
+                                      boolean allowEmpty) {
+        Console console = System.console();
+        if (console != null) {            // consola real
+            while (true) {
+                char[] pwdChars = console.readPassword(prompt);
+                String pwd = new String(pwdChars).trim();
+                if (allowEmpty && pwd.isEmpty()) return "";
+                if (!pwd.isEmpty()) return pwd;
+                System.out.println("La contraseña no puede estar vacía.");
+            }
+        } else {                          // fallback en IDE
+            while (true) {
+                System.out.print(prompt);
+                String pwd = sc.nextLine().trim();
+                if (allowEmpty && pwd.isEmpty()) return "";
+                if (!pwd.isEmpty()) return pwd;
+                System.out.println("La contraseña no puede estar vacía.");
             }
         }
     }

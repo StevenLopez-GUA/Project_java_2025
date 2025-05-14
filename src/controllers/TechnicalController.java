@@ -1,133 +1,158 @@
 package controllers;
 
 import com.google.gson.reflect.TypeToken;
-import model.Technical;
 import model.Record;
+import model.Technical;
+import org.mindrot.jbcrypt.BCrypt;
 import persistence.JSONManager;
 import util.InputValidator;
 import util.Utils;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class TechnicalController {
+
     private static final String TECHS_FILE = "technicians.json";
 
-    /** Devuelve la lista completa de técnicos */
+    /* ---------- utilidades internas ---------- */
     private List<Technical> getAll() {
-        Type listType = new TypeToken<List<Technical>>(){}.getType();
+        Type listType = new TypeToken<List<Technical>>() {}.getType();
         return JSONManager.readList(TECHS_FILE, listType);
     }
 
-    /** Guarda la lista completa de técnicos */
     private void saveAll(List<Technical> list) {
         JSONManager.writeList(TECHS_FILE, list);
     }
 
-    /** Genera el siguiente ID autoincrementable */
     private int getNextId() {
-        int max = 0;
-        for (Technical t : getAll()) {
-            if (t.getTechnicalId() > max) max = t.getTechnicalId();
-        }
-        return max + 1;
+        return getAll().stream()
+                       .mapToInt(Technical::getTechnicalId)
+                       .max().orElse(0) + 1;
     }
+    /* ----------------------------------------- */
 
-    /** Muestra todos los técnicos */
+    /* ============= CRUD ======================= */
     public void showAll() {
-        List<Technical> list = getAll();
         System.out.println("=== Lista de Técnicos ===");
-        for (Technical t : list) {
-            System.out.printf("ID:%d  Nombre:%s%n", t.getTechnicalId(), t.getNameTechnical());
+        getAll().forEach(t ->
+            System.out.printf("ID:%d  Nombre:%s  Correo:%s%n",
+                    t.getTechnicalId(), t.getNameTechnical(), t.getEmailTechnical()));
+    }
+
+    public void ensureAdmin() {
+        List<Technical> list = getAll();
+        String adminEmail = "admini@gmail.com";
+        boolean exists = list.stream()
+        .map(Technical::getEmailTechnical)
+        .anyMatch(e -> e != null && e.equalsIgnoreCase(adminEmail));
+        if (!exists) {
+            String hash = BCrypt.hashpw("Admin123!", BCrypt.gensalt());
+            Technical admin = new Technical(getNextId(), "Admin", adminEmail, hash);
+            list.add(admin);
+            saveAll(list);
+            System.out.println("Administrador creado: " + adminEmail + " / Admin123!");
         }
     }
 
-    /** Muestra un técnico por ID */
     public void showById(int id) {
-        for (Technical t : getAll()) {
-            if (t.getTechnicalId() == id) {
-                System.out.println("=== Técnico Encontrado ===");
-                System.out.printf("ID: %d%nNombre: %s%n", t.getTechnicalId(), t.getNameTechnical());
-                return;
-            }
-        }
-        System.out.println("No se encontró técnico con ID " + id);
+        getAll().stream()
+                .filter(t -> t.getTechnicalId() == id)
+                .findFirst()
+                .ifPresentOrElse(t -> {
+                    System.out.println("=== Técnico Encontrado ===");
+                    System.out.printf("ID:%d%nNombre:%s%nCorreo:%s%n",
+                            t.getTechnicalId(), t.getNameTechnical(), t.getEmailTechnical());
+                }, () -> System.out.println("No se encontró técnico con ID " + id));
     }
 
-    /** Agrega un nuevo técnico */
     public void add(Scanner sc) {
-        int id = getNextId();
-        System.out.println("Asignando ID: " + id);
-        String nombre = InputValidator.readValidatedText(sc, "Nombre del técnico: ");
-        Technical t = new Technical(id, nombre);
+        int    id     = getNextId();
+        String nombre = InputValidator.readValidatedText  (sc, "Nombre del técnico: ");
+        String email  = InputValidator.readValidatedEmail (sc, "Correo electrónico: ");
+        String pass   = InputValidator.readPassword       (sc, "Contraseña: ");
+
+        String hash = BCrypt.hashpw(pass, BCrypt.gensalt());
+        Technical t = new Technical(id, nombre, email, hash);
+
         List<Technical> list = getAll();
         list.add(t);
         saveAll(list);
-        System.out.println("Técnico agregado: " + nombre);
+
+        System.out.printf("Técnico agregado → ID:%d  %s%n", id, nombre);
     }
 
-    /** Actualiza un técnico existente */
     public void update(Scanner sc) {
         int id = InputValidator.readValidatedInteger(sc, "ID de técnico a actualizar: ");
         List<Technical> list = getAll();
-        Technical existing = null;
-        for (Technical t : list) {
-            if (t.getTechnicalId() == id) {
-                existing = t;
-                break;
-            }
-        }
+        Technical existing = list.stream()
+                                 .filter(t -> t.getTechnicalId() == id)
+                                 .findFirst().orElse(null);
+
         if (existing == null) {
             System.out.println("No se encontró técnico con ID " + id);
             return;
         }
+
+        /* --- pedir nuevos valores (Enter = mantener) --- */
         System.out.println("Nombre actual: " + existing.getNameTechnical());
-        String nuevoNombre = InputValidator.readValidatedText(sc, "Nuevo nombre: ");
-        Technical updated = new Technical(id, nuevoNombre);
+        System.out.print  ("Nuevo nombre (Enter p/ mantener): ");
+        String nuevoNombre = sc.nextLine().trim();
+
+        System.out.println("Correo actual: " + existing.getEmailTechnical());
+        System.out.print  ("Nuevo correo (Enter p/ mantener): ");
+        String nuevoEmail = sc.nextLine().trim();
+
+        String nuevaPass = InputValidator.readPassword(
+                sc, "Nueva contraseña (Enter p/ mantener): ", true);
+
+        /* --- si está vacío, usa el valor previo --- */
+        if (nuevoNombre.isBlank()) nuevoNombre = existing.getNameTechnical();
+        if (nuevoEmail .isBlank()) nuevoEmail  = existing.getEmailTechnical();
+        String nuevoHash = nuevaPass.isBlank()
+                ? existing.getPassword()
+                : BCrypt.hashpw(nuevaPass, BCrypt.gensalt());
+
+        Technical updated = new Technical(id, nuevoNombre, nuevoEmail, nuevoHash);
+
+        /* reemplazar en la lista y persistir */
         for (int i = 0; i < list.size(); i++) {
             if (list.get(i).getTechnicalId() == id) {
                 list.set(i, updated);
-                saveAll(list);
-                System.out.println("Técnico actualizado.");
-                return;
+                break;
             }
         }
+        saveAll(list);
+        System.out.println("Técnico actualizado.");
     }
 
-    
-/**
- * Elimina un técnico solo si no está referenciado en el historial.
- */
-public void delete(Scanner sc) {
-    int id = InputValidator.readValidatedInteger(sc, "ID de técnico a eliminar: ");
+    public void delete(Scanner sc) {
+        int id = InputValidator.readValidatedInteger(sc, "ID de técnico a eliminar: ");
 
-    // Verificar referencias en historial.json
-    Type recordListType = new TypeToken<List<Record>>() {}.getType();
-    List<Record> historial = JSONManager.readList("historial.json", recordListType);
-    for (Record r : historial) {
-        if (r.getTechnicalId() != null && r.getTechnicalId() == id) {
-            System.out.println("No se puede eliminar: técnico está usado en historial (Record ID: " 
-                + r.getRecordId() + ").");
+        /* ––– verificar uso en historial ––– */
+        Type recType = new TypeToken<List<Record>>() {}.getType();
+        List<Record> historial = JSONManager.readList("historial.json", recType);
+        boolean usado = historial.stream()
+                                 .anyMatch(r -> r.getTechnicalId() != null
+                                            && r.getTechnicalId() == id);
+        if (usado) {
+            System.out.println("No se puede eliminar: técnico referenciado en historial.");
             return;
         }
-    }
 
-    // Si no hay referencias, proceder a eliminar
-    List<Technical> list = getAll();
-    for (Technical t : new ArrayList<>(list)) {
-        if (t.getTechnicalId() == id) {
-            list.remove(t);
+        /* ––– eliminar ––– */
+        List<Technical> list = getAll();
+        if (list.removeIf(t -> t.getTechnicalId() == id)) {
             saveAll(list);
-            System.out.println("Técnico eliminado: " + t.getNameTechnical());
-            return;
+            System.out.println("Técnico eliminado (ID " + id + ").");
+        } else {
+            System.out.println("No se encontró técnico con ID " + id);
         }
     }
-    System.out.println("No se encontró técnico con ID " + id);
-}
+    /* =========================================== */
 
-    /** Menú interactivo de CRUD de técnicos */
+    /* ============= Menú CLI ==================== */
     public void menu(Scanner sc) {
         int opt;
         do {
@@ -151,7 +176,7 @@ public void delete(Scanner sc) {
                 default -> System.out.println("Opción inválida.");
             }
             if (opt >= 1 && opt <= 5) {
-                System.out.println("\nPresiona Enter para continuar..."); sc.nextLine();
+                System.out.println("\nPresiona Enter para continuar…"); sc.nextLine();
             }
         } while (opt != 6);
     }

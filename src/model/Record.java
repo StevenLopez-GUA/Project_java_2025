@@ -1,16 +1,17 @@
 package model;
 
 public class Record {
+
     private int recordId;
     private String serviceTag;
-    private int phaseId;
-    private Integer technicalId; // Puede ser null si no se asigna técnico
-    private String entryDate; // Usaremos formato ISO 8601 por simplicidad
-    private String departureDate; // Puede ser null hasta que la fase se complete
+    private Integer phaseId;
+    private Integer technicalId;
+    private String entryDate;
+    private String departureDate;
     private String details;
 
-    public Record(int recordId, String serviceTag, int phaseId, Integer technicalId, String entryDate,
-            String departureDate, String details) {
+    public Record(int recordId, String serviceTag, Integer phaseId,
+                  Integer technicalId, String entryDate, String departureDate, String details) {
         this.recordId = recordId;
         this.serviceTag = serviceTag;
         this.phaseId = phaseId;
@@ -36,20 +37,12 @@ public class Record {
         this.serviceTag = serviceTag;
     }
 
-    public int getPhaseId() {
+    public Integer getPhaseId() {
         return phaseId;
     }
 
-    public void setPhaseId(int phaseId) {
+    public void setPhaseId(Integer phaseId) {
         this.phaseId = phaseId;
-    }
-
-    public Integer getTechnicalId() {
-        return technicalId;
-    }
-
-    public void setTechnicalId(Integer technicalId) {
-        this.technicalId = technicalId;
     }
 
     public String getEntryDate() {
@@ -76,16 +69,11 @@ public class Record {
         this.details = details;
     }
 
-    @Override
-    public String toString() {
-        return "Record{" +
-                "recordId=" + recordId +
-                ", serviceTag='" + serviceTag + '\'' +
-                ", phaseId=" + phaseId +
-                ", technicalId=" + technicalId +
-                ", entryDate='" + entryDate + '\'' +
-                ", departureDate='" + departureDate + '\'' +
-                ", details='" + details + '\'' +
-                '}';
+    public Integer getTechnicalId() {
+        return technicalId;
+    }
+
+    public void setTechnicalId(Integer technicalId) {
+        this.technicalId = technicalId;
     }
 }

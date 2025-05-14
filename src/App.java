@@ -24,10 +24,12 @@ public class App {
                 System.out.println("=== Iniciar Sesión ===");
                 doLogin(sc, auth);
                 if (!auth.isLoggedIn()) {
-                    System.out.println("❌ Credenciales inválidas. Presiona Enter para reintentar.");
+                    System.out.println("Credenciales inválidas. Presiona Enter para reintentar.");
                     sc.nextLine();
+                    Utils.clearConsole();
                 }
             }
+            Utils.clearConsole();
 
             /* Controladores (inyectamos auth al que lo ocupa) */
             ClientController clientCtrl = new ClientController();
@@ -35,7 +37,7 @@ public class App {
             PhaseController phaseCtrl = new PhaseController();
             RecordController recordCtrl = new RecordController();
             StatisticsController statsCtrl = new StatisticsController();
-            WarrantyManager warrantyMgr = new WarrantyManager();
+            WarrantyManager warrantyMgr = new WarrantyManager(auth);
 
             int option;
 
@@ -44,11 +46,11 @@ public class App {
 
                 /* ——— Encabezado de sesión ——— */
                 if (auth.isLoggedIn()) {
-                    System.out.println("👤 Sesión: "
+                    System.out.println("Sesión: "
                             + auth.currentUser().getNameTechnical()
                             + "  (ID " + auth.currentUser().getTechnicalId() + ")");
                 } else {
-                    System.out.println("👤 [Sin sesión]");
+                    System.out.println("[Sin sesión]");
                 }
 
                 /* ——— Menú principal ——— */
@@ -68,7 +70,7 @@ public class App {
                 switch (option) {
                     case 1 -> { // — Gestión de computadoras
                         if (!auth.isLoggedIn()) {
-                            System.out.println("\n⚠️  Debes iniciar sesión para usar esta sección.");
+                            System.out.println("\nDebes iniciar sesión para usar esta sección.");
                             pause(sc);
                             break;
                         }
@@ -117,13 +119,6 @@ public class App {
                         Utils.clearConsole();
                         statsCtrl.menu(sc);
                     }
-                    case 10 -> {
-                        if (auth.isLoggedIn())
-                            auth.logout();
-                        else
-                            doLogin(sc, auth);
-                        pause(sc);
-                    }
                     case 0 -> {
                         auth.logout();
                         System.out.println("Sesión cerrada. Presiona Enter para continuar...");
@@ -148,9 +143,9 @@ public class App {
         String email = InputValidator.readValidatedEmail(sc, "Email: ");
         String pass = InputValidator.readPassword(sc, "Contraseña: ");
         if (auth.login(email, pass)) {
-            System.out.println("✅ Bienvenido " + auth.currentUser().getNameTechnical());
+            System.out.println("Bienvenido " + auth.currentUser().getNameTechnical());
         } else {
-            System.out.println("❌ Credenciales inválidas");
+            System.out.println("Credenciales inválidas");
         }
     }
 

@@ -17,7 +17,8 @@ public class PhaseController {
 
     /** Lee todas las fases del archivo JSON */
     private List<Phase> getAll() {
-        Type listType = new TypeToken<List<Phase>>(){}.getType();
+        Type listType = new TypeToken<List<Phase>>() {
+        }.getType();
         return JSONManager.readList(PHASES_FILE, listType);
     }
 
@@ -30,7 +31,8 @@ public class PhaseController {
     private int getNextId() {
         int max = 0;
         for (Phase f : getAll()) {
-            if (f.getPhaseId() > max) max = f.getPhaseId();
+            if (f.getPhaseId() > max)
+                max = f.getPhaseId();
         }
         return max + 1;
     }
@@ -97,34 +99,35 @@ public class PhaseController {
     }
 
     /**
- * Elimina una fase solo si no está referenciada en el historial.
- */
-public void delete(Scanner sc) {
-    int id = InputValidator.readValidatedInteger(sc, "ID de fase a eliminar: ");
+     * Elimina una fase solo si no está referenciada en el historial.
+     */
+    public void delete(Scanner sc) {
+        int id = InputValidator.readValidatedInteger(sc, "ID de fase a eliminar: ");
 
-    // Verificar referencias en historial.json
-    Type recordListType = new TypeToken<List<Record>>() {}.getType();
-    List<Record> historial = JSONManager.readList("historial.json", recordListType);
-    for (Record r : historial) {
-        if (r.getPhaseId() == id) {
-            System.out.println("No se puede eliminar: fase está usada en historial (Record ID: " 
-                + r.getRecordId() + ").");
-            return;
+        // Verificar referencias en historial.json
+        Type recordListType = new TypeToken<List<Record>>() {
+        }.getType();
+        List<Record> historial = JSONManager.readList("historial.json", recordListType);
+        for (Record r : historial) {
+            if (r.getPhaseId() == id) {
+                System.out.println("No se puede eliminar: fase está usada en historial (Record ID: "
+                        + r.getRecordId() + ").");
+                return;
+            }
         }
-    }
 
-    // Si no hay referencias, proceder a eliminar
-    List<Phase> list = getAll();
-    for (Phase f : new ArrayList<>(list)) {
-        if (f.getPhaseId() == id) {
-            list.remove(f);
-            saveAll(list);
-            System.out.println("Fase eliminada: " + f.getNamePhase());
-            return;
+        // Si no hay referencias, proceder a eliminar
+        List<Phase> list = getAll();
+        for (Phase f : new ArrayList<>(list)) {
+            if (f.getPhaseId() == id) {
+                list.remove(f);
+                saveAll(list);
+                System.out.println("Fase eliminada: " + f.getNamePhase());
+                return;
+            }
         }
+        System.out.println("No se encontró fase con ID " + id);
     }
-    System.out.println("No se encontró fase con ID " + id);
-}
 
     /** Menú interactivo de CRUD de fases */
     public void menu(Scanner sc) {
@@ -137,7 +140,7 @@ public void delete(Scanner sc) {
             System.out.println("3. Agregar");
             System.out.println("4. Actualizar");
             System.out.println("5. Eliminar");
-            System.out.println("6. Volver al menú principal");
+            System.out.println("0. Volver al menú principal");
             opt = InputValidator.readValidatedInteger(sc, "Opción: ");
 
             switch (opt) {
@@ -146,12 +149,17 @@ public void delete(Scanner sc) {
                 case 3 -> add(sc);
                 case 4 -> update(sc);
                 case 5 -> delete(sc);
-                case 6 -> System.out.println("Volviendo al menú principal...");
+                case 0 -> {
+                    System.out.println("Volviendo al menú principal...");
+                    Utils.clearConsole();
+                }
                 default -> System.out.println("Opción inválida.");
             }
             if (opt >= 1 && opt <= 5) {
-                System.out.println("\nPresiona Enter para continuar..."); sc.nextLine();
+                System.out.println("\nPresiona Enter para continuar...");
+                sc.nextLine();
+                Utils.clearConsole();
             }
-        } while (opt != 6);
+        } while (opt != 0);
     }
 }

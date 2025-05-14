@@ -25,21 +25,25 @@ public class StatisticsController {
             System.out.println("1. Computadoras en cada fase");
             System.out.println("2. Tiempo promedio por fase");
             System.out.println("3. Carga de trabajo por técnico");
-            System.out.println("4. Volver al menú principal");
+            System.out.println("0. Volver al menú principal");
             opt = InputValidator.readValidatedInteger(sc, "Opción: ");
-            Utils.clearConsole();
+
             switch (opt) {
                 case 1 -> reportCountsByPhase();
                 case 2 -> reportAvgTimeByPhase();
                 case 3 -> reportWorkloadByTech();
-                case 4 -> System.out.println("Volviendo al menú principal...");
+                case 0 -> {
+                    System.out.println("Volviendo al menú principal...");
+                    Utils.clearConsole();
+                }
                 default -> System.out.println("Opción inválida.");
             }
             if (opt >= 1 && opt <= 3) {
                 System.out.println("\nPresiona Enter para continuar...");
                 sc.nextLine();
+                Utils.clearConsole();
             }
-        } while (opt != 4);
+        } while (opt != 0);
     }
 
     /** Carga todos los registros de historial */

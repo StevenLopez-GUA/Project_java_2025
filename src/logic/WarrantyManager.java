@@ -4,6 +4,7 @@ import com.google.gson.reflect.TypeToken;
 import model.Record;
 import persistence.JSONManager;
 import util.InputValidator;
+import auth.AuthenticationService;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,6 +17,20 @@ import java.util.Scanner;
 public class WarrantyManager {
 
     private static final String HISTORIAL_FILE = "historial.json"; // O el nombre de tu archivo de historial
+
+
+    private final AuthenticationService auth;
+
+    /** Constructor que recibe el servicio de autenticación */
+    public WarrantyManager(AuthenticationService auth) {
+        this.auth = auth;
+    }
+
+    /** Constructor por defecto (sin autenticación) */
+    public WarrantyManager() {
+        this(null);
+    }
+
 
     /**
      * Mueve una computadora a una nueva fase.
@@ -48,14 +63,18 @@ public class WarrantyManager {
 
         // 3) Crear nuevo Record para fase 1 (Recepción)
         int newId = historial.size() + 1;
-        Record rec = new Record(
-                newId,
-                serviceTag,
-                1, // faseId = 1 => Recepción
-                null, // technicalId = null
-                now, // fecha de entrada
-                null, // fecha de salida pendiente
-                "Ingreso en Recepción");
+        Integer techId = (auth != null && auth.isLoggedIn())
+                ? auth.currentUser().getTechnicalId()
+                : null;
+
+                Record rec = new Record(
+                    newId,
+                    serviceTag,
+                    1,             // fase
+                    techId,        // technicalId desde sesión
+                    now,
+                    null,
+                    "Ingreso en Recepción");
 
         // 4) Añadir y guardar
         historial.add(rec);

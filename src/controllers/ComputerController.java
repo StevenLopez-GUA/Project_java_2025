@@ -16,13 +16,14 @@ import java.util.Scanner;
 
 public class ComputerController {
     private static final String COMPUTERS_FILE = "computers.json";
-    private WarrantyManager warrantyMgr = new WarrantyManager();
+    private final WarrantyManager warrantyMgr;
 
     // Dentro de ComputerController.java
     private AuthenticationService auth;
 
     public ComputerController(AuthenticationService auth) {
         this.auth = auth;
+        this.warrantyMgr = new WarrantyManager(auth);
     }
 
     /** Lee todos los equipos del JSON */
@@ -152,7 +153,7 @@ public class ComputerController {
             System.out.println("3. Agregar");
             System.out.println("4. Actualizar");
             System.out.println("5. Eliminar");
-            System.out.println("6. Volver al menú principal");
+            System.out.println("0. Volver al menú principal");
             opt = InputValidator.readValidatedInteger(sc, "Opción: ");
 
             switch (opt) {
@@ -164,13 +165,17 @@ public class ComputerController {
                 case 3 -> add(sc);
                 case 4 -> update(sc);
                 case 5 -> delete(sc);
-                case 6 -> System.out.println("Volviendo al menú principal...");
+                case 0 -> {
+                    System.out.println("Volviendo al menú principal...");
+                    Utils.clearConsole();
+                }
                 default -> System.out.println("Opción inválida.");
             }
             if (opt >= 1 && opt <= 5) {
                 System.out.println("\nPresiona Enter para continuar...");
                 sc.nextLine();
+                Utils.clearConsole();
             }
-        } while (opt != 6);
+        } while (opt != 0);
     }
 }

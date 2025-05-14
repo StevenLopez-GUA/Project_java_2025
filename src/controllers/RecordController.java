@@ -69,17 +69,20 @@ public class RecordController {
             System.out.println("2. Ver historial por Service Tag");
             System.out.println("3. Volver al menú principal");
             opt = InputValidator.readValidatedInteger(sc, "Opción: ");
-            Utils.clearConsole();
             switch (opt) {
                 case 1 -> showAll();
                 case 2 -> showByTag(sc);
-                case 3 -> System.out.println("Volviendo al menú principal...");
+                case 0 -> {
+                    System.out.println("Volviendo al menú principal...");
+                    Utils.clearConsole();
+                }
                 default -> System.out.println("Opción inválida.");
             }
             if (opt == 1 || opt == 2) {
                 System.out.println("\nPresiona Enter para continuar...");
                 sc.nextLine();
+                Utils.clearConsole();
             }
-        } while (opt != 3);
+        } while (opt != 0);
     }
 }

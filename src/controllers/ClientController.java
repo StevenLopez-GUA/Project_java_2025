@@ -125,21 +125,21 @@ public class ClientController {
             System.out.println("3. Agregar cliente");
             System.out.println("4. Actualizar cliente");
             System.out.println("5. Eliminar cliente");
-            System.out.println("6. Volver al menú principal");
+            System.out.println("0. Volver al menú principal");
             opt = InputValidator.readValidatedInteger(sc, "Opción: ");
 
             switch (opt) {
                 case 1 -> {
-                    Utils.clearConsole();
+
                     showAll();
                 }
                 case 2 -> {
-                    Utils.clearConsole();
+
                     int searchId = InputValidator.readValidatedInteger(sc, "ID de cliente a buscar: ");
                     showById(searchId);
                 }
                 case 3 -> {
-                    Utils.clearConsole();
+
                     int newId = getNextId();
                     System.out.println("Asignando ID de cliente: " + newId);
                     String newName = InputValidator.readValidatedText(sc, "Nombre: ");
@@ -148,7 +148,7 @@ public class ClientController {
                     add(new Client(newId, newName, newEmail, newTel));
                 }
                 case 4 -> {
-                    Utils.clearConsole();
+
                     int updId = InputValidator.readValidatedInteger(sc, "ID del cliente a actualizar: ");
                     Client existing = null;
                     for (Client c : getAll()) {
@@ -185,17 +185,21 @@ public class ClientController {
                     updateClient(new Client(updId, updatedName, updatedEmail, updatedTel));
                 }
                 case 5 -> {
-                    Utils.clearConsole();
+
                     int delId = InputValidator.readValidatedInteger(sc, "ID del cliente a eliminar: ");
                     delete(delId);
                 }
-                case 6 -> System.out.println("Volviendo al menú principal...");
+                case 0 -> {
+                    System.out.println("Volviendo al menú principal...");
+                    Utils.clearConsole();
+                }
                 default -> System.out.println("Opción inválida.");
             }
             if (opt >= 1 && opt <= 5) {
                 System.out.println("\nPresiona Enter para continuar...");
                 sc.nextLine();
+                Utils.clearConsole();
             }
-        } while (opt != 6);
+        } while (opt != 0);
     }
 }

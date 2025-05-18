@@ -1,10 +1,19 @@
 import auth.AuthenticationService;
 import controllers.*;
 import logic.WarrantyManager;
+import model.Computer;
+import model.Phase;
+import model.Record;
+import persistence.JSONManager;
 import util.*;
 
+import java.lang.reflect.Type;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
+
+import com.google.gson.reflect.TypeToken;
 
 public class App {
 
@@ -123,6 +132,7 @@ public class App {
                         auth.logout();
                         System.out.println("Sesión cerrada. Presiona Enter para continuar...");
                         sc.nextLine();
+                        Utils.clearConsole();
                     }
                     default -> {
                         System.out.println("Opción inválida.");
@@ -158,20 +168,56 @@ public class App {
             WarrantyManager mgr,
             AuthenticationService auth) {
         try {
+            // 1) Listado de todas las computadoras con su fase actual (tomada del
+            // historial)
+            Type recListType = new TypeToken<List<Record>>() {
+            }.getType();
+            List<Record> records = JSONManager.readList("historial.json", recListType);
+
+            Type compListType = new TypeToken<List<Computer>>() {
+            }.getType();
+            List<Computer> allComps = JSONManager.readList("computers.json", compListType);
+
+            // 2) Cargar nombres de fase
+            Type phaseListType = new TypeToken<List<Phase>>() {
+            }.getType();
+            List<Phase> phases = JSONManager.readList("phases.json", phaseListType);
+
+            System.out.println("=== Computadoras y Fase Actual ===");
+            for (Computer c : allComps) {
+                String tag = c.getServiceTag();
+                // Buscar el último registro de este tag (mayor recordId)
+                Optional<Record> lastRec = records.stream()
+                        .filter(r -> r.getServiceTag().equals(tag))
+                        .max(Comparator.comparingInt(Record::getRecordId));
+                int phaseId = lastRec.map(Record::getPhaseId).orElse(-1);
+                // Obtener nombre de fase o "Desconocida"
+                String phaseName = phases.stream()
+                        .filter(ph -> ph.getPhaseId() == phaseId)
+                        .map(Phase::getNamePhase)
+                        .findFirst()
+                        .orElse("Desconocida");
+                System.out.printf("ServiceTag: %s | Fase: %d – %s%n",
+                        tag, phaseId, phaseName);
+            }
+            System.out.println(); // línea en blanco antes de continuar
+
+            // 3) Ahora sí pedimos el ServiceTag y la fase destino
             System.out.println("Mover Computadora:");
             String tag = InputValidator.readValidatedAlphanumeric(sc, "Service Tag: ");
             int newPhase = InputValidator.readValidatedInteger(sc, "ID de la nueva fase: ");
 
-            /* Si hay sesión, sugerimos usar ese técnico; 0 para ninguno */
+            // 4) Determinar técnico asignado
             Integer techId = null;
             if (auth.isLoggedIn()) {
                 System.out.printf("Tec asignado (%d) Enter=usar / 0=otro: ",
                         auth.currentUser().getTechnicalId());
                 String raw = sc.nextLine().trim();
-                if (!raw.isBlank() && !raw.equals("0"))
+                if (!raw.isBlank() && !raw.equals("0")) {
                     techId = Integer.parseInt(raw);
-                else if (raw.isBlank())
+                } else if (raw.isBlank()) {
                     techId = auth.currentUser().getTechnicalId();
+                }
             } else {
                 int techRaw = InputValidator.readValidatedInteger(sc,
                         "ID de Técnico (0 si no aplica): ");
@@ -179,9 +225,28 @@ public class App {
             }
 
             String detalles = InputValidator.readValidatedText(sc, "Detalles: ");
+
+            // 5) Confirmación
+            String confirm;
+            do {
+                System.out.print("¿Confirmas mover la computadora '"
+                        + tag + "' a la fase " + newPhase + "? (s/n): ");
+                confirm = sc.nextLine().trim().toLowerCase();
+            } while (!confirm.equals("s") && !confirm.equals("n"));
+
+            if (confirm.equals("n")) {
+                System.out.println("Operación cancelada. No se movió la computadora.");
+                pause(sc);
+                return;
+            }
+
+            // 6) Ejecutar movimiento
             mgr.moverComputadora(tag, newPhase, techId, detalles);
+
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
+        pause(sc);
     }
+
 }

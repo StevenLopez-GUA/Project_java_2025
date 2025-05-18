@@ -72,6 +72,10 @@ public class PhaseController {
 
     /** Actualiza una fase existente */
     public void update(Scanner sc) {
+        
+        showAll();
+        System.out.println();
+
         int id = InputValidator.readValidatedInteger(sc, "ID de fase a actualizar: ");
         List<Phase> list = getAll();
         Phase existing = null;
@@ -102,7 +106,12 @@ public class PhaseController {
      * Elimina una fase solo si no está referenciada en el historial.
      */
     public void delete(Scanner sc) {
+
+        showAll();
+        System.out.println();
+
         int id = InputValidator.readValidatedInteger(sc, "ID de fase a eliminar: ");
+
 
         // Verificar referencias en historial.json
         Type recordListType = new TypeToken<List<Record>>() {
@@ -114,6 +123,17 @@ public class PhaseController {
                         + r.getRecordId() + ").");
                 return;
             }
+        }
+
+        String confirm;
+        do {
+            System.out.print("¿Confirmas eliminación de '" + id + "'? (s/n): ");
+            confirm = sc.nextLine().trim().toLowerCase();
+        } while (!confirm.equals("s") && !confirm.equals("n"));
+
+        if (confirm.equals("n")) {
+            System.out.println("Operación cancelada. No se eliminó ninguna computadora.");
+            return;
         }
 
         // Si no hay referencias, proceder a eliminar

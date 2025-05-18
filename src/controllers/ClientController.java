@@ -130,7 +130,6 @@ public class ClientController {
 
             switch (opt) {
                 case 1 -> {
-
                     showAll();
                 }
                 case 2 -> {
@@ -149,6 +148,9 @@ public class ClientController {
                 }
                 case 4 -> {
 
+                    showAll();
+                    System.out.println();
+                    
                     int updId = InputValidator.readValidatedInteger(sc, "ID del cliente a actualizar: ");
                     Client existing = null;
                     for (Client c : getAll()) {
@@ -186,6 +188,9 @@ public class ClientController {
                 }
                 case 5 -> {
 
+                    showAll();
+                    System.out.println();
+                    
                     int delId = InputValidator.readValidatedInteger(sc, "ID del cliente a eliminar: ");
                     delete(delId);
                 }

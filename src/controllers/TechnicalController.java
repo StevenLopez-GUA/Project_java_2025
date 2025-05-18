@@ -84,6 +84,9 @@ public class TechnicalController {
     }
 
     public void update(Scanner sc) {
+        showAll();
+        System.out.println();
+
         int id = InputValidator.readValidatedInteger(sc, "ID de técnico a actualizar: ");
         List<Technical> list = getAll();
         Technical existing = list.stream()
@@ -130,6 +133,10 @@ public class TechnicalController {
     }
 
     public void delete(Scanner sc) {
+
+        showAll();
+        System.out.println();
+
         int id = InputValidator.readValidatedInteger(sc, "ID de técnico a eliminar: ");
 
         /* ––– verificar uso en historial ––– */
@@ -141,6 +148,17 @@ public class TechnicalController {
                         && r.getTechnicalId() == id);
         if (usado) {
             System.out.println("No se puede eliminar: técnico referenciado en historial.");
+            return;
+        }
+
+        String confirm;
+        do {
+            System.out.print("¿Confirmas eliminación de '" + id + "'? (s/n): ");
+            confirm = sc.nextLine().trim().toLowerCase();
+        } while (!confirm.equals("s") && !confirm.equals("n"));
+
+        if (confirm.equals("n")) {
+            System.out.println("Operación cancelada. No se eliminó ninguna computadora.");
             return;
         }
 

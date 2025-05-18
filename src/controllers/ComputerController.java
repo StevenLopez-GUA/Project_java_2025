@@ -5,17 +5,19 @@ import com.google.gson.reflect.TypeToken;
 import auth.AuthenticationService;
 import logic.WarrantyManager;
 import model.Computer;
+import model.Client;
 import persistence.JSONManager;
 import util.InputValidator;
 import util.Utils;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 public class ComputerController {
     private static final String COMPUTERS_FILE = "computers.json";
+    private static final String CLIENTS_FILE = "clients.json";
+
     private final WarrantyManager warrantyMgr;
 
     // Dentro de ComputerController.java
@@ -24,6 +26,19 @@ public class ComputerController {
     public ComputerController(AuthenticationService auth) {
         this.auth = auth;
         this.warrantyMgr = new WarrantyManager(auth);
+    }
+
+    /** Recupera el nombre de cliente dado su ID */
+    private String getClientName(int clientId) {
+        Type listType = new TypeToken<List<Client>>() {
+        }.getType();
+        List<Client> clients = JSONManager.readList(CLIENTS_FILE, listType);
+        for (Client cl : clients) {
+            if (cl.getClientId() == clientId) {
+                return cl.getName(); // Ajusta el getter según tu modelo Client
+            }
+        }
+        return "Desconocido";
     }
 
     /** Lee todos los equipos del JSON */
@@ -43,8 +58,9 @@ public class ComputerController {
         List<Computer> list = getAll();
         System.out.println("=== Lista de Computadoras ===");
         for (Computer c : list) {
-            System.out.printf("ServiceTag:%s | ClienteID:%d | Problema:%s | Fecha:%s%n",
-                    c.getServiceTag(), c.getClientId(), c.getProblemDescription(), c.getReceptionDate());
+            String nombreCliente = getClientName(c.getClientId());
+            System.out.printf("ServiceTag:%s | Cliente:%s | Problema:%s | Fecha:%s%n",
+                    c.getServiceTag(), nombreCliente, c.getProblemDescription(), c.getReceptionDate());
         }
     }
 
@@ -53,12 +69,14 @@ public class ComputerController {
         for (Computer c : getAll()) {
             if (c.getServiceTag().equals(tag)) {
                 System.out.println("=== Computadora Encontrada ===");
-                System.out.printf("ServiceTag: %s%nClienteID: %d%nProblema: %s%nFecha: %s%n",
-                        c.getServiceTag(), c.getClientId(), c.getProblemDescription(), c.getReceptionDate());
+                String nombreCliente = getClientName(c.getClientId());
+                System.out.printf("ServiceTag: %s%nCliente: %s%nProblema: %s%nFecha: %s%n",
+                        c.getServiceTag(), nombreCliente, c.getProblemDescription(), c.getReceptionDate());
                 return;
             }
         }
         System.out.println("No se encontró ninguna computadora con ServiceTag '" + tag + "'.");
+
     }
 
     /** Agrega una nueva computadora y crea registro inicial de recepción */
@@ -81,6 +99,10 @@ public class ComputerController {
 
     /** Actualiza una computadora existente */
     public void update(Scanner sc) {
+
+        showAll();
+        System.out.println();
+
         String tag = InputValidator.readValidatedAlphanumeric(sc, "Service Tag de la computadora a actualizar: ");
         List<Computer> list = getAll();
         Computer existing = null;
@@ -129,17 +151,34 @@ public class ComputerController {
 
     /** Elimina una computadora por serviceTag */
     public void delete(Scanner sc) {
+        // 1) Listar todos los registros
+        showAll();
+        System.out.println();
+
+        // 2) Pedir ServiceTag a eliminar
         String tag = InputValidator.readValidatedAlphanumeric(sc, "Service Tag de la computadora a eliminar: ");
-        List<Computer> list = getAll();
-        for (Computer c : new ArrayList<>(list)) {
-            if (c.getServiceTag().equals(tag)) {
-                list.remove(c);
-                saveAll(list);
-                System.out.println("Computadora eliminada: " + tag);
-                return;
-            }
+
+        // 3) Confirmar eliminación
+        String confirm;
+        do {
+            System.out.print("¿Confirmas eliminación de '" + tag + "'? (s/n): ");
+            confirm = sc.nextLine().trim().toLowerCase();
+        } while (!confirm.equals("s") && !confirm.equals("n"));
+
+        if (confirm.equals("n")) {
+            System.out.println("Operación cancelada. No se eliminó ninguna computadora.");
+            return;
         }
-        System.out.println("No se encontró la computadora con ServiceTag '" + tag + "'.");
+
+        // 4) Realizar eliminación
+        List<Computer> list = getAll();
+        boolean removed = list.removeIf(c -> c.getServiceTag().equals(tag));
+        if (removed) {
+            saveAll(list);
+            System.out.println("Computadora eliminada: " + tag);
+        } else {
+            System.out.println("No se encontró la computadora con ServiceTag '" + tag + "'.");
+        }
     }
 
     /** Menú interactivo de CRUD para Computadoras */

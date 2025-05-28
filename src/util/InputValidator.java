@@ -31,7 +31,7 @@ public class InputValidator {
         while (true) {
             System.out.print(prompt);
             String input = sc.nextLine().trim();
-            if (input.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            if (input.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9-]+\\.[A-Za-z]{2,}$")) {
                 return input;
             } else {
                 System.out.println("Formato de correo inválido. Por favor ingresa un correo válido.");

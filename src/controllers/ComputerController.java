@@ -81,21 +81,33 @@ public class ComputerController {
 
     /** Agrega una nueva computadora y crea registro inicial de recepción */
     public void add(Scanner sc) {
-        String tag = InputValidator.readValidatedAlphanumeric(sc, "Service Tag: ");
-        int clientId = InputValidator.readValidatedInteger(sc, "ID de Cliente: ");
-        String problem = InputValidator.readValidatedText(sc, "Descripción del problema: ");
-        String date = InputValidator.readValidatedDate(sc, "Fecha de recepción (YYYY-MM-DD): ");
+    // 1) Leer ServiceTag
+    String tag = InputValidator.readValidatedAlphanumeric(sc, "Service Tag: ");
 
-        Computer comp = new Computer(tag, clientId, problem, date);
-        List<Computer> list = getAll();
-        list.add(comp);
-        saveAll(list);
-        System.out.println("Computadora registrada: " + tag);
-
-        // Encolamos en fase inicial (Recepción)
-        warrantyMgr.enqueueInitialPhase(tag, clientId);
-        System.out.println("Computadora " + tag + " encolada en fase Recepción.");
+    // 2) Verificar si ya existe
+    List<Computer> listaActual = getAll();
+    boolean existe = listaActual.stream()
+        .anyMatch(c -> c.getServiceTag().equalsIgnoreCase(tag));
+    if (existe) {
+        System.out.println("Error: ya existe una computadora con ServiceTag \"" + tag + "\".");
+        return;
     }
+
+    // 3) Si no existe, continuar con el flujo normal
+    int clientId = InputValidator.readValidatedInteger(sc, "ID de Cliente: ");
+    String problem = InputValidator.readValidatedText(sc, "Descripción del problema: ");
+    String date = InputValidator.readValidatedDate(sc, "Fecha de recepción (YYYY-MM-DD): ");
+
+    Computer comp = new Computer(tag, clientId, problem, date);
+    listaActual.add(comp);
+    saveAll(listaActual);
+    System.out.println("Computadora registrada: " + tag);
+
+    // Encolamos en fase inicial (Recepción)
+    warrantyMgr.enqueueInitialPhase(tag, clientId);
+    System.out.println("Computadora " + tag + " encolada en fase Recepción.");
+}
+
 
     /** Actualiza una computadora existente */
     public void update(Scanner sc) {
